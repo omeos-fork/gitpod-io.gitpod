@@ -263,9 +263,13 @@ export class OrganizationService {
     }
 
     /**
-     * List members of an organization, excluding the built-in installation admin user and all deleted users.
+     * List members of an organization, excluding all deleted users and optionally the built-in installation admin user.
      */
-    public async listMembers(userId: string, orgId: string): Promise<OrgMemberInfo[]> {
+    public async listMembers(
+        userId: string,
+        orgId: string,
+        excludeInstallationAdmin?: boolean,
+    ): Promise<OrgMemberInfo[]> {
         await this.auth.checkPermissionOnOrganization(userId, "read_members", orgId);
         const members = await this.teamDB.findMembersByTeam(orgId);
 
@@ -278,7 +282,7 @@ export class OrganizationService {
                     if (user.markedDeleted) {
                         return null;
                     }
-                    if (user.id === BUILTIN_INSTLLATION_ADMIN_USER_ID) {
+                    if (excludeInstallationAdmin && user.id === BUILTIN_INSTLLATION_ADMIN_USER_ID) {
                         return null;
                     }
 

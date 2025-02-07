@@ -188,7 +188,7 @@ export class OrganizationServiceAPI implements ServiceImpl<typeof OrganizationSe
             throw new ApplicationError(ErrorCodes.BAD_REQUEST, "organizationId is required");
         }
 
-        const members = await this.orgService.listMembers(ctxUserId(), req.organizationId);
+        const members = await this.orgService.listMembers(ctxUserId(), req.organizationId, true);
         //TODO pagination
         const response = new ListOrganizationMembersResponse();
         response.members = members.map((member) => this.apiConverter.toOrganizationMember(member));
@@ -218,7 +218,7 @@ export class OrganizationServiceAPI implements ServiceImpl<typeof OrganizationSe
             this.apiConverter.fromOrgMemberRole(req.role),
         );
         const member = await this.orgService
-            .listMembers(ctxUserId(), req.organizationId)
+            .listMembers(ctxUserId(), req.organizationId, true)
             .then((members) => members.find((member) => member.userId === req.userId));
         return new UpdateOrganizationMemberResponse({
             member: member && this.apiConverter.toOrganizationMember(member),
