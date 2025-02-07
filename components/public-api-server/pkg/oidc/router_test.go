@@ -101,7 +101,7 @@ func TestRoute_callback(t *testing.T) {
 
 	url, err := resp.Location()
 	require.NoError(t, err)
-	require.Equal(t, "/relative/url/to/some/page", url.Path, "callback redirects properly")
+	require.Equal(t, "/relative/url/to/some/page?newUser=true", url.Path, "callback redirects properly")
 
 }
 

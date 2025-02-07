@@ -177,7 +177,15 @@ func (s *Service) getCallbackHandler() http.HandlerFunc {
 				return
 			}
 			if message.NewUser {
-				oauth2Result.ReturnToURL += "&newUser=true"
+				returnURL, err := url.Parse(oauth2Result.ReturnToURL)
+				if err != nil {
+					log.WithError(err).Warn("Failed to parse return URL")
+				} else {
+					q := returnURL.Query()
+					q.Set("newUser", "true")
+					returnURL.RawQuery = q.Encode()
+					oauth2Result.ReturnToURL = returnURL.String()
+				}
 			}
 			for _, cookie := range cookies {
 				http.SetCookie(rw, cookie)
