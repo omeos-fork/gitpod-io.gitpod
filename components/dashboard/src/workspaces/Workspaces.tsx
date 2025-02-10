@@ -24,7 +24,6 @@ import Tooltip from "../components/Tooltip";
 import { useUpdateCurrentUserMutation } from "../data/current-user/update-mutation";
 import { useFeatureFlag } from "../data/featureflag-query";
 import { useSuggestedRepositories } from "../data/git-providers/suggested-repositories-query";
-import { useInstallationConfiguration } from "../data/installation/default-workspace-image-query";
 import { useOrgSettingsQuery } from "../data/organizations/org-settings-query";
 import { useCurrentOrg } from "../data/organizations/orgs-query";
 import { SuggestedOrgRepository, useOrgSuggestedRepos } from "../data/organizations/suggested-repositories-query";
@@ -41,6 +40,7 @@ import PersonalizedContent from "./PersonalizedContent";
 import { VideoCarousel } from "./VideoCarousel";
 import { WorkspaceEntry } from "./WorkspaceEntry";
 import { WorkspacesSearchBar } from "./WorkspacesSearchBar";
+import { useInstallationConfiguration } from "../data/installation/installation-config-query";
 
 export const GETTING_STARTED_DISMISSAL_KEY = "workspace-list-getting-started";
 
