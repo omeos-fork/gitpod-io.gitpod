@@ -23,7 +23,7 @@ import { WelcomeMessageEditorModal } from "./WelcomeMessageEditor";
 import { WelcomeMessagePreview } from "./WelcomeMessagePreview";
 
 export const gitpodWelcomeSubheading =
-    `Gitpod’s sandboxed, ephemeral development environments enable you to use your existing tools without worrying about vulnerabilities impacting their local machines.` as const;
+    `With Gitpod, you'll start coding instantly in a pre-configured environment that matches your team's setup, giving you the freedom to focus on what matters most: writing great code.` as const;
 
 type Props = {
     handleUpdateTeamSettings: (
