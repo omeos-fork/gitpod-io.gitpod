@@ -5,7 +5,7 @@
  */
 
 import { PlainMessage } from "@bufbuild/protobuf";
-import type { OrganizationSettings_OnboardingSettings_WelcomeMessage } from "@gitpod/public-api/lib/gitpod/v1/organization_pb";
+import type { OnboardingSettings_WelcomeMessage } from "@gitpod/public-api/lib/gitpod/v1/organization_pb";
 import { Button } from "@podkit/buttons/Button";
 import { LoadingButton } from "@podkit/buttons/LoadingButton";
 import { Textarea } from "@podkit/forms/TextArea";
@@ -19,12 +19,12 @@ import { OrgMemberAvatarInput } from "./OrgMemberAvatarInput";
 import { gitpodWelcomeSubheading } from "./WelcomeMessageConfigurationField";
 
 type Props = {
-    settings: OrganizationSettings_OnboardingSettings_WelcomeMessage | undefined;
+    settings: OnboardingSettings_WelcomeMessage | undefined;
     isLoading: boolean;
     isOwner: boolean;
     isOpen: boolean;
     handleUpdateWelcomeMessage: (
-        newSettings: PlainMessage<OrganizationSettings_OnboardingSettings_WelcomeMessage>,
+        newSettings: PlainMessage<OnboardingSettings_WelcomeMessage>,
         options?: UpdateTeamSettingsOptions,
     ) => Promise<void>;
     setIsOpen: (isOpen: boolean) => void;

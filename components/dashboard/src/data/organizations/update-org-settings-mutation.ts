@@ -73,6 +73,10 @@ export const useUpdateOrgSettingsMutation = () => {
                 onboardingSettings: {
                     ...onboardingSettings,
                     updateRecommendedRepositories: !!onboardingSettings?.recommendedRepositories,
+                    welcomeMessage: {
+                        ...onboardingSettings?.welcomeMessage,
+                        featuredMemberResolvedAvatarUrl: undefined, // This field is not allowed to be set in the request.
+                    },
                 },
                 annotateGitCommits,
             });

@@ -364,6 +364,13 @@ export class OrganizationServiceAPI implements ServiceImpl<typeof OrganizationSe
                 );
             }
 
+            if (req.onboardingSettings.welcomeMessage?.featuredMemberResolvedAvatarUrl) {
+                throw new ApplicationError(
+                    ErrorCodes.BAD_REQUEST,
+                    "featuredMemberResolvedAvatarUrl is not allowed to be set",
+                );
+            }
+
             if (req.onboardingSettings.internalLink) {
                 if (req.onboardingSettings.internalLink.length > 255) {
                     throw new ApplicationError(ErrorCodes.BAD_REQUEST, "internalLink must be <= 255 characters long");

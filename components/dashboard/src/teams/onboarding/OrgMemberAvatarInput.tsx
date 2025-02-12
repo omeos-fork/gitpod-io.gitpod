@@ -7,12 +7,12 @@
 import { useState } from "react";
 import { useListOrganizationMembers } from "../../data/organizations/members-query";
 
-import type { OrganizationSettings_OnboardingSettings_WelcomeMessage } from "@gitpod/public-api/lib/gitpod/v1/organization_pb";
+import type { OnboardingSettings_WelcomeMessage } from "@gitpod/public-api/lib/gitpod/v1/organization_pb";
 import { Button } from "@podkit/buttons/Button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@podkit/dropdown/DropDown";
 
 type Props = {
-    settings: OrganizationSettings_OnboardingSettings_WelcomeMessage | undefined;
+    settings: OnboardingSettings_WelcomeMessage | undefined;
     setFeaturedMemberId: (featuredMemberId: string | undefined) => void;
 };
 export const OrgMemberAvatarInput = ({ settings, setFeaturedMemberId }: Props) => {
