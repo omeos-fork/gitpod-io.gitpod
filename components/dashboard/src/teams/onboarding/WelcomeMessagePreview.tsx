@@ -5,7 +5,7 @@
  */
 
 import { Button } from "@podkit/buttons/Button";
-import { Heading2, Subheading } from "@podkit/typography/Headings";
+import { Heading1, Heading2, Heading3, Subheading } from "@podkit/typography/Headings";
 import Markdown from "react-markdown";
 import { useOrgSettingsQuery } from "../../data/organizations/org-settings-query";
 import { gitpodWelcomeSubheading } from "./WelcomeMessageConfigurationField";
@@ -32,18 +32,22 @@ export const WelcomeMessagePreview = ({ disabled, setWelcomeMessageEditorOpen, h
             </div>
             <Subheading>{gitpodWelcomeSubheading}</Subheading>
             {welcomeMessage && (
-                <div className="p-8 my-4 bg-pk-surface-secondary text-pk-content-primary rounded-xl flex flex-col gap-5 items-center justify-center">
+                <article className="p-8 my-4 bg-pk-surface-secondary text-pk-content-primary rounded-xl flex flex-col gap-5 items-center justify-center">
                     {avatarUrl && <img src={avatarUrl} alt="" className="w-12 h-12 rounded-full" />}
                     <Markdown
                         className="space-y-4 text-center bg-pk-surface-secondary"
                         components={{
                             ul: ({ children }) => <ul className="list-disc list-inside">{children}</ul>,
                             ol: ({ children }) => <ol className="list-decimal list-inside">{children}</ol>,
+                            img: ({ src, alt }) => <img src={src} alt={alt} className="w-full rounded-lg" />,
+                            h1: ({ children }) => <Heading1 className="text-left text-2xl">{children}</Heading1>,
+                            h2: ({ children }) => <Heading2 className="text-left text-xl">{children}</Heading2>,
+                            h3: ({ children }) => <Heading3 className="text-left text-lg">{children}</Heading3>,
                         }}
                     >
                         {welcomeMessage}
                     </Markdown>
-                </div>
+                </article>
             )}
         </div>
     );
