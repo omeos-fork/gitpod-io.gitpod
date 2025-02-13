@@ -45,7 +45,6 @@ import { PaginationResponse } from "@gitpod/public-api/lib/gitpod/v1/pagination_
 import { validate as uuidValidate } from "uuid";
 import { ctxUserId } from "../util/request-context";
 import { ApplicationError, ErrorCodes } from "@gitpod/gitpod-protocol/lib/messaging/error";
-import { EntitlementService } from "../billing/entitlement-service";
 
 @injectable()
 export class OrganizationServiceAPI implements ServiceImpl<typeof OrganizationServiceInterface> {
@@ -54,8 +53,6 @@ export class OrganizationServiceAPI implements ServiceImpl<typeof OrganizationSe
         private readonly orgService: OrganizationService,
         @inject(PublicAPIConverter)
         private readonly apiConverter: PublicAPIConverter,
-        @inject(EntitlementService)
-        private readonly entitlementService: EntitlementService,
     ) {}
 
     async listOrganizationWorkspaceClasses(
@@ -266,16 +263,14 @@ export class OrganizationServiceAPI implements ServiceImpl<typeof OrganizationSe
                 "updateRestrictedEditorNames is required to be true to update restrictedEditorNames",
             );
         }
-        if (typeof req.workspaceSharingDisabled === "boolean") {
-            update.workspaceSharingDisabled = req.workspaceSharingDisabled;
-        }
-        if (typeof req.defaultWorkspaceImage === "string") {
-            update.defaultWorkspaceImage = req.defaultWorkspaceImage;
-        }
+
+        update.workspaceSharingDisabled = req.workspaceSharingDisabled;
+        update.defaultWorkspaceImage = req.defaultWorkspaceImage;
         update.allowedWorkspaceClasses = req.allowedWorkspaceClasses;
-        if (req.updatePinnedEditorVersions) {
-            update.pinnedEditorVersions = req.pinnedEditorVersions;
-        }
+        update.pinnedEditorVersions = req.pinnedEditorVersions;
+        update.annotateGitCommits = req.annotateGitCommits;
+        update.maxParallelRunningWorkspaces = req.maxParallelRunningWorkspaces;
+
         if (typeof req.defaultRole === "string" && req.defaultRole !== "") {
             switch (req.defaultRole) {
                 case "owner":
@@ -288,13 +283,8 @@ export class OrganizationServiceAPI implements ServiceImpl<typeof OrganizationSe
             }
         }
 
-        if (typeof req.timeoutSettings?.denyUserTimeouts === "boolean") {
-            update.timeoutSettings = update.timeoutSettings || {};
-            update.timeoutSettings.denyUserTimeouts = req.timeoutSettings.denyUserTimeouts;
-        }
-        if (typeof req.timeoutSettings?.inactivity === "object") {
-            update.timeoutSettings = update.timeoutSettings || {};
-            update.timeoutSettings.inactivity = this.apiConverter.toDurationString(req.timeoutSettings.inactivity);
+        if (req.timeoutSettings) {
+            update.timeoutSettings = this.apiConverter.fromTimeoutSettings(req.timeoutSettings);
         }
 
         if (req.roleRestrictions.length > 0 && !req.updateRoleRestrictions) {
@@ -304,35 +294,7 @@ export class OrganizationServiceAPI implements ServiceImpl<typeof OrganizationSe
             );
         }
         if (req.updateRoleRestrictions) {
-            update.roleRestrictions = update.roleRestrictions ?? {};
-            for (const roleRestriction of req.roleRestrictions) {
-                const role = this.apiConverter.fromOrgMemberRole(roleRestriction.role);
-                const permissions = roleRestriction.permissions.map((p) =>
-                    this.apiConverter.fromOrganizationPermission(p),
-                );
-                update.roleRestrictions[role] = permissions;
-            }
-        }
-
-        if (typeof req.maxParallelRunningWorkspaces === "number") {
-            if (req.maxParallelRunningWorkspaces < 0) {
-                throw new ApplicationError(ErrorCodes.BAD_REQUEST, "maxParallelRunningWorkspaces must be >= 0");
-            }
-            const maxAllowance = await this.entitlementService.getMaxParallelWorkspaces(
-                ctxUserId(),
-                req.organizationId,
-            );
-            if (maxAllowance && req.maxParallelRunningWorkspaces > maxAllowance) {
-                throw new ApplicationError(
-                    ErrorCodes.BAD_REQUEST,
-                    `maxParallelRunningWorkspaces must be <= ${maxAllowance}`,
-                );
-            }
-            if (!Number.isInteger(req.maxParallelRunningWorkspaces)) {
-                throw new ApplicationError(ErrorCodes.BAD_REQUEST, "maxParallelRunningWorkspaces must be an integer");
-            }
-
-            update.maxParallelRunningWorkspaces = req.maxParallelRunningWorkspaces;
+            update.roleRestrictions = this.apiConverter.fromRoleRestrictions(req.roleRestrictions);
         }
 
         if (req.onboardingSettings) {
@@ -347,10 +309,6 @@ export class OrganizationServiceAPI implements ServiceImpl<typeof OrganizationSe
                     "recommendedRepositories can only be set when updateRecommendedRepositories is true",
                 );
             }
-        }
-
-        if (req.annotateGitCommits !== undefined) {
-            update.annotateGitCommits = req.annotateGitCommits;
         }
 
         if (Object.keys(update).length === 0) {
