@@ -30,6 +30,7 @@ import { TypeORM } from "./typeorm";
 import { EncryptionService } from "@gitpod/gitpod-protocol/lib/encryption/encryption-service";
 import { DBOrgEnvVar } from "./entity/db-org-env-var";
 import { filter } from "../utils";
+import { merge } from "ts-deepmerge";
 
 @injectable()
 export class TeamDBImpl extends TransactionalDBImpl<TeamDB> implements TeamDB {
@@ -394,19 +395,22 @@ export class TeamDBImpl extends TransactionalDBImpl<TeamDB> implements TeamDB {
         });
     }
 
-    public async setOrgSettings(orgId: string, settings: Partial<OrganizationSettings>): Promise<OrganizationSettings> {
+    public async setOrgSettings(
+        orgId: string,
+        partialUpdate: Partial<OrganizationSettings>,
+    ): Promise<OrganizationSettings> {
         const repo = await this.getOrgSettingsRepo();
-        const team = await repo.findOne({ where: { orgId, deleted: false } });
-        if (!team) {
+        const currentSettings = await repo.findOne({ where: { orgId, deleted: false } });
+        if (!currentSettings) {
             return await repo.save({
-                ...settings,
+                ...partialUpdate,
                 orgId,
             });
         }
-        return await repo.save({
-            ...team,
-            ...settings,
-        });
+        // We want to deep-merge columns that are JSON shapes here.
+        // By ignore fields set to undefined, and don't merge arrays to match our API semantics
+        const settings = merge.withOptions({ mergeArrays: false }, currentSettings, partialUpdate);
+        return await repo.save(settings);
     }
 
     public async hasActiveSSO(organizationId: string): Promise<boolean> {
