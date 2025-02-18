@@ -342,4 +342,30 @@ export interface WorkspaceInstanceMetrics {
          */
         workspaceImageSize: number;
     }>;
+
+    /**
+     * Metrics about the workspace initializer
+     */
+    initializerMetrics?: InitializerMetrics;
+}
+
+export interface InitializerMetrics {
+    git?: InitializerMetric;
+    fileDownload?: InitializerMetric;
+    snapshot?: InitializerMetric;
+    backup?: InitializerMetric;
+    prebuild?: InitializerMetric;
+    composite?: InitializerMetric;
+}
+
+export interface InitializerMetric {
+    /**
+     * Duration in milliseconds
+     */
+    duration: number;
+
+    /**
+     * Size in bytes
+     */
+    size: number;
 }

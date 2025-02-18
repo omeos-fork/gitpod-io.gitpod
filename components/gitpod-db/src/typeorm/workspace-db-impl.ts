@@ -19,6 +19,7 @@ import {
     WorkspaceAndInstance,
     WorkspaceInfo,
     WorkspaceInstance,
+    WorkspaceInstanceMetrics,
     WorkspaceInstanceUser,
     WorkspaceSession,
     WorkspaceType,
@@ -62,6 +63,7 @@ import { TypeORM } from "./typeorm";
 import { ApplicationError, ErrorCodes } from "@gitpod/gitpod-protocol/lib/messaging/error";
 import { DBProject } from "./entity/db-project";
 import { PrebuiltWorkspaceWithWorkspace } from "@gitpod/gitpod-protocol/src/protocol";
+import { DBWorkspaceInstanceMetrics } from "./entity/db-workspace-instance-metrics-db";
 
 type RawTo<T> = (instance: WorkspaceInstance, ws: Workspace) => T;
 interface OrderBy {
@@ -107,6 +109,10 @@ export class TypeORMWorkspaceDBImpl extends TransactionalDBImpl<WorkspaceDB> imp
         return (await this.getEntityManager()).getRepository<DBPrebuiltWorkspaceUpdatable>(
             DBPrebuiltWorkspaceUpdatable,
         );
+    }
+
+    private async getWorkspaceInstanceMetricsRepo(): Promise<Repository<DBWorkspaceInstanceMetrics>> {
+        return (await this.getEntityManager()).getRepository<DBWorkspaceInstanceMetrics>(DBWorkspaceInstanceMetrics);
     }
 
     public async connect(maxTries: number = 3, timeout: number = 2000): Promise<void> {
@@ -1142,6 +1148,36 @@ export class TypeORMWorkspaceDBImpl extends TransactionalDBImpl<WorkspaceDB> imp
 
         const res = await query.getMany();
         return res.map((r) => r.info);
+    }
+
+    async storeMetrics(instanceId: string, metrics: WorkspaceInstanceMetrics): Promise<WorkspaceInstanceMetrics> {
+        const repo = await this.getWorkspaceInstanceMetricsRepo();
+        const result = await repo.save({
+            instanceId,
+            metrics,
+        });
+        return result.metrics;
+    }
+
+    async getMetrics(instanceId: string): Promise<WorkspaceInstanceMetrics | undefined> {
+        const repo = await this.getWorkspaceInstanceMetricsRepo();
+        const dbMetrics = await repo.findOne({ where: { instanceId } });
+        return dbMetrics?.metrics;
+    }
+
+    async updateMetrics(
+        instanceId: string,
+        update: WorkspaceInstanceMetrics,
+        merge: (current: WorkspaceInstanceMetrics, update: WorkspaceInstanceMetrics) => WorkspaceInstanceMetrics,
+    ): Promise<WorkspaceInstanceMetrics> {
+        return await this.transaction(async (db) => {
+            const current = await db.getMetrics(instanceId);
+            if (!current) {
+                return await db.storeMetrics(instanceId, update);
+            }
+            const merged = merge(current, update);
+            return await db.storeMetrics(instanceId, merged);
+        });
     }
 }
 
